@@ -1,126 +1,175 @@
 import 'package:flutter/material.dart';
-// import 'package:practice_2/widgets/assetswidget.dart';
-// import 'package:practice_2/widgets/columnwidget.dart';
-//import 'package:practice_2/widgets/networkimage.dart';
-import 'package:practice_2/widgets/text.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'providers/auth_provider.dart';
+import 'providers/medicine_provider.dart';
+import 'providers/sale_provider.dart';
+import 'providers/report_provider.dart';
+import 'providers/settings_provider.dart';  // Add this
+import 'services/api_service.dart';
+import 'services/auth_service.dart';
+import 'services/storage_service.dart';
+import 'screens/splash_screen.dart';
+import 'screens/onboarding_screen.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/auth/register_screen.dart';
+import 'screens/auth/forgot_password_screen.dart';
+import 'screens/auth/otp_verification_screen.dart';
+import 'screens/auth/reset_password_screen.dart';
+import 'screens/dashboard/dashboard_screen.dart';
+import 'screens/medicines/medicine_list_screen.dart';
+import 'screens/medicines/add_medicine_screen.dart';
+import 'screens/medicines/medicine_detail_screen.dart';
+import 'screens/sales/sale_list_screen.dart';
+import 'screens/sales/new_sale_screen.dart';
+import 'screens/sales/sale_detail_screen.dart';
+import 'screens/reports/report_dashboard.dart';
+import 'screens/reports/sales_report_screen.dart';
+import 'screens/reports/inventory_report_screen.dart';
+import 'screens/reports/staff_report_screen.dart';
+import 'screens/profile/profile_screen.dart';
+import 'screens/settings/settings_screen.dart';  // Add this
+import 'screens/settings/change_password_screen.dart';  // Add this
+import 'screens/settings/about_screen.dart';  // Add this
+import 'utils/theme.dart';
+import 'utils/constants.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize services
+  const storage = FlutterSecureStorage();
+  final storageService = StorageService(storage);
+  final apiService = ApiService(storageService);
+  final authService = AuthService(apiService, storageService);
+  
+  // Check if onboarding is completed
+  final prefs = await SharedPreferences.getInstance();
+  final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
+  
+  runApp(MyApp(
+    apiService: apiService,
+    authService: authService,
+    storageService: storageService,
+    onboardingCompleted: onboardingCompleted,
+  ));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final ApiService apiService;
+  final AuthService authService;
+  final StorageService storageService;
+  final bool onboardingCompleted;
 
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: Textwidget(),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+  const MyApp({
+    Key? key,
+    required this.apiService,
+    required this.authService,
+    required this.storageService,
+    required this.onboardingCompleted,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => AuthProvider(authService, storageService),
         ),
+        ChangeNotifierProvider(
+          create: (_) => MedicineProvider(apiService),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => SaleProvider(apiService),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ReportProvider(apiService),
+        ),
+        ChangeNotifierProvider(  // Add this
+          create: (_) => SettingsProvider(storageService),
+        ),
+      ],
+      child: Consumer2<AuthProvider, SettingsProvider>(
+        builder: (context, authProvider, settingsProvider, child) {
+          return MaterialApp(
+            title: 'CT Pharmacy',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme, // You'll need to create this
+            themeMode: settingsProvider.getThemeMode(),
+            initialRoute: _getInitialRoute(authProvider, onboardingCompleted),
+            routes: {
+              '/splash': (context) => const SplashScreen(),
+              '/onboarding': (context) => const OnboardingScreen(),
+              '/login': (context) => const LoginScreen(),
+              '/register': (context) => const RegisterScreen(),
+              '/forgot-password': (context) => const ForgotPasswordScreen(),
+              '/dashboard': (context) => const DashboardScreen(),
+              '/medicines': (context) => const MedicineListScreen(),
+              '/add-medicine': (context) => const AddMedicineScreen(),
+              '/sales': (context) => const SaleListScreen(),
+              '/new-sale': (context) => const NewSaleScreen(),
+              '/reports': (context) => const ReportDashboard(),
+              '/sales-report': (context) => const SalesReportScreen(),
+              '/inventory-report': (context) => const InventoryReportScreen(),
+              '/staff-report': (context) => const StaffReportScreen(),
+              '/profile': (context) => const ProfileScreen(),
+              '/settings': (context) => const SettingsScreen(),  // Add this
+              '/change-password': (context) => const ChangePasswordScreen(),  // Add this
+              '/about': (context) => const AboutScreen(),  // Add this
+            },
+            onGenerateRoute: (settings) {
+              if (settings.name == '/medicine-detail') {
+                final args = settings.arguments as Map<String, dynamic>;
+                return MaterialPageRoute(
+                  builder: (context) => MedicineDetailScreen(medicineId: args['id']),
+                );
+              }
+              if (settings.name == '/sale-detail') {
+                final args = settings.arguments as Map<String, dynamic>;
+                return MaterialPageRoute(
+                  builder: (context) => SaleDetailScreen(saleId: args['id']),
+                );
+              }
+              if (settings.name == '/otp-verification') {
+                final email = settings.arguments as String;
+                return MaterialPageRoute(
+                  builder: (context) => OtpVerificationScreen(email: email),
+                );
+              }
+              if (settings.name == '/reset-password') {
+                final args = settings.arguments as Map<String, String>;
+                return MaterialPageRoute(
+                  builder: (context) => ResetPasswordScreen(
+                    email: args['email'] ?? '',
+                    otp: args['otp'],
+                    uid: args['uid'],
+                    token: args['token'],
+                  ),
+                );
+              }
+              return null;
+            },
+          );
+        },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  String _getInitialRoute(AuthProvider authProvider, bool onboardingCompleted) {
+    if (authProvider.isLoading) {
+      return '/splash';
+    }
+    
+    if (authProvider.isAuthenticated) {
+      return '/dashboard';
+    }
+    
+    if (!onboardingCompleted) {
+      return '/onboarding';
+    }
+    
+    return '/login';
   }
 }
